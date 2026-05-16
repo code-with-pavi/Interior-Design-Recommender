@@ -1,4 +1,3 @@
-# 🏠 AI Interior Designer
 
 <div align="center">
 
