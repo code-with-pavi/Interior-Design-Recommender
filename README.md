@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# ✨ AI-Powered Interior Design Recommendation System ✨
+#  AI-Powered Interior Design Recommendation System 
 
 ### Transform Empty Rooms into Beautiful Spaces with Artificial Intelligence
 
