@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}Analysis Results - AI Interior Designer{% endblock %}
+
+{% block content %}
+<section class="result-section py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold">Your Design Analysis</h1>
+            <p class="lead text-muted">AI-powered recommendations for your space</p>
+            <div class="confidence-badge">
+                <span class="badge bg-success fs-6">
+                    <i class="bi bi-check-circle me-2"></i>{{ result.confidence }}% Confidence
+                </span>
+            </div>
+        </div>
+
+        <!-- Image and Overview -->
+        <div class="row mb-5">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="card shadow border-0 rounded-4">
+                    <div class="card-body p-0">
+                        <img src="{{ url_for('static', filename='uploads/' + result.uploaded_image) }}" 
+                             alt="Your Room" 
+                             class="img-fluid rounded-4">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow border-0 rounded-4 h-100">
+                    <div class="card-body p-4">
+                        <h3 class="card-title mb-4">
+                            <i class="bi bi-info-circle text-primary me-2"></i>Room Analysis
+                        </h3>
+                        
+                        <div class="analysis-item mb-3">
+                            <h5 class="text-muted mb-2">Room Type</h5>
+                            <h4 class="text-dark">
+                                <i class="bi bi-house-door me-2"></i>{{ result.room_type }}
+                            </h4>
+                        </div>
+
+                        <div class="analysis-item mb-3">
+                            <h5 class="text-muted mb-2">Current Style</h5>
+                            <h4 class="text-dark text-capitalize">
+                                <i class="bi bi-palette me-2"></i>{{ result.detected_style }}
+                            </h4>
+                        </div>
+
+                        <div class="analysis-item mb-3">
+                            <h5 class="text-muted mb-2">Detected Objects</h5>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for object in result.detected_objects %}
+                                    <span class="badge bg-primary-subtle text-primary px-3 py-2">{{ object }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="analysis-item">
+                            <h5 class="text-muted mb-2">Image Details</h5>
+                            <p class="mb-0">
+                                <i class="bi bi-aspect-ratio me-2"></i>{{ result.image_dimensions }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Color Palette -->
+        <div class="card shadow border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="bi bi-paint-bucket text-primary me-2"></i>Recommended Color Palette
+                </h3>
+                <p class="text-muted mb-4">Perfect colors for {{ result.selected_style }} style</p>
+                <div class="row g-3">
+                    {% for color in result.color_palette %}
+                        <div class="col-md-2 col-4">
+                            <div class="color-swatch" style="background-color: {{ color | safe }};">
+                                <span class="color-code">{{ color }}</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Furniture Recommendations -->
+        <div class="card shadow border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="bi bi-bookmark-star text-primary me-2"></i>Furniture Recommendations
+                </h3>
+                <div class="row g-3">
+                    {% for item in result.recommendations.furniture %}
+                        <div class="col-md-4">
+                            <div class="recommendation-card h-100">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="mb-0">{{ item.item }}</h5>
+                                    <span class="badge bg-{{ 'danger' if item.priority == 'High' else 'warning' if item.priority == 'Medium' else 'info' }}">
+                                        {{ item.priority }}
+                                    </span>
+                                </div>
+                                <p class="text-primary fw-bold mb-0">{{ item.estimated_price }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lighting Recommendations -->
+        <div class="card shadow border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-3">
+                    <i class="bi bi-lightbulb text-primary me-2"></i>Lighting Suggestions
+                </h3>
+                <p class="lead">{{ result.recommendations.lighting }}</p>
+            </div>
+        </div>
+
+        <!-- Layout Optimization -->
+        <div class="card shadow border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="bi bi-grid-3x3 text-primary me-2"></i>Layout Optimization
+                </h3>
+                <div class="row g-3">
+                    {% for tip in result.recommendations.layout %}
+                        <div class="col-md-6">
+                            <div class="layout-tip">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                {{ tip }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Wins -->
+        <div class="card shadow border-0 rounded-4 mb-4 bg-light">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="bi bi-lightning-charge text-warning me-2"></i>Quick Wins
+                </h3>
+                <p class="text-muted mb-3">Easy improvements you can make today:</p>
+                <div class="row g-3">
+                    {% for win in result.recommendations.quick_wins %}
+                        <div class="col-md-6">
+                            <div class="quick-win-card">
+                                <i class="bi bi-star-fill text-warning me-2"></i>
+                                {{ win }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Estimate -->
+        <div class="card shadow border-0 rounded-4 mb-4">
+            <div class="card-body p-4">
+                <h3 class="card-title mb-4">
+                    <i class="bi bi-cash-coin text-primary me-2"></i>Budget Estimate
+                </h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="budget-info">
+                            <h5 class="text-muted mb-2">Estimated Range</h5>
+                            <h3 class="text-dark">{{ result.recommendations.budget_estimate.range }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="budget-info">
+                            <h5 class="text-muted mb-2">Quality Level</h5>
+                            <h3 class="text-dark">{{ result.recommendations.budget_estimate.quality }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="budget-info">
+                            <h5 class="text-muted mb-2">Timeline</h5>
+                            <h3 class="text-dark">{{ result.recommendations.budget_estimate.timeline }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="text-center mt-5">
+            <a href="{{ url_for('upload_page') }}" class="btn btn-primary btn-lg px-5 me-3">
+                <i class="bi bi-arrow-repeat me-2"></i>Analyze Another Room
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary btn-lg px-5">
+                <i class="bi bi-printer me-2"></i>Print Report
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %}

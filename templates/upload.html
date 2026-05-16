@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Room - AI Interior Designer{% endblock %}
+
+{% block content %}
+<section class="upload-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold">Upload Your Room</h1>
+                    <p class="lead text-muted">Let AI analyze your space and provide expert recommendations</p>
+                </div>
+
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-body p-5">
+                        <form id="uploadForm" method="POST" action="{{ url_for('process_image') }}" enctype="multipart/form-data">
+                            
+                            <!-- Image Upload Area -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Room Image</label>
+                                <div id="dropZone" class="drop-zone">
+                                    <div class="drop-zone-content">
+                                        <i class="bi bi-cloud-arrow-up display-1 text-primary mb-3"></i>
+                                        <h5>Drag & Drop your image here</h5>
+                                        <p class="text-muted mb-3">or</p>
+                                        <button type="button" class="btn btn-primary" id="selectFileBtn">
+                                            <i class="bi bi-folder2-open me-2"></i>Browse Files
+                                        </button>
+                                        <input type="file" id="fileInput" name="room_image" accept="image/*" hidden required>
+                                        <p class="small text-muted mt-3 mb-0">Supported formats: JPG, PNG, JPEG (Max 16MB)</p>
+                                    </div>
+                                    <div id="imagePreview" class="image-preview" style="display: none;">
+                                        <img id="previewImg" src="" alt="Preview">
+                                        <button type="button" class="btn btn-sm btn-danger remove-btn" id="removeImageBtn">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Style Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Preferred Design Style</label>
+                                <select class="form-select form-select-lg" name="style" required>
+                                    <option value="modern" selected>Modern - Clean lines and contemporary feel</option>
+                                    <option value="minimalist">Minimalist - Less is more approach</option>
+                                    <option value="luxury">Luxury - Elegant and sophisticated</option>
+                                    <option value="industrial">Industrial - Raw and edgy aesthetic</option>
+                                    <option value="scandinavian">Scandinavian - Cozy and functional</option>
+                                    <option value="traditional">Traditional - Classic and timeless</option>
+                                </select>
+                            </div>
+
+                            <!-- Budget Selection -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold">Budget Range</label>
+                                <div class="btn-group w-100" role="group">
+                                    <input type="radio" class="btn-check" name="budget" id="budgetLow" value="low">
+                                    <label class="btn btn-outline-primary" for="budgetLow">
+                                        <i class="bi bi-coin me-2"></i>Low<br>
+                                        <small class="text-muted">$500 - $2,000</small>
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="budget" id="budgetMedium" value="medium" checked>
+                                    <label class="btn btn-outline-primary" for="budgetMedium">
+                                        <i class="bi bi-cash-stack me-2"></i>Medium<br>
+                                        <small class="text-muted">$2,000 - $8,000</small>
+                                    </label>
+
+                                    <input type="radio" class="btn-check" name="budget" id="budgetHigh" value="high">
+                                    <label class="btn btn-outline-primary" for="budgetHigh">
+                                        <i class="bi bi-gem me-2"></i>High<br>
+                                        <small class="text-muted">$8,000+</small>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                                    <i class="bi bi-magic me-2"></i>Analyze My Room
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tips Section -->
+                <div class="tips-section mt-4">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-lightbulb text-warning me-2"></i>Tips for Best Results
+                            </h5>
+                            <ul class="mb-0">
+                                <li>Take photos in good lighting conditions</li>
+                                <li>Capture the entire room in one shot</li>
+                                <li>Avoid using filters or heavy editing</li>
+                                <li>Make sure furniture and decor are visible</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-body text-center p-5">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 4rem; height: 4rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h4 class="mb-2">Analyzing Your Room...</h4>
+                <p class="text-muted mb-0">Our AI is processing your image</p>
+                <div class="progress mt-3" style="height: 8px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Loading modal
+    const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    
+    // Form submission
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('Please select an image first!');
+            return;
+        }
+        loadingModal.show();
+    });
+</script>
+{% endblock %}
